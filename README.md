@@ -1,4 +1,4 @@
-<a href="https://sr20-froum.com/btroi"><img src="https://raw.githubusercontent.com/BenFenner/btroi/master/Screenshot%20(Home).png" title="Choose your adventure" alt="Home Page"></a>
+<a href="https://www.sr20-froum.com/btroi"><img src="https://raw.githubusercontent.com/BenFenner/btroi/master/Screenshot%20(Home).png" title="Choose your adventure" alt="Home Page"></a>
 
 # BoomTown Technical Assessment
 
