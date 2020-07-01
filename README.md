@@ -2,7 +2,8 @@
 
 # BoomTown Technical Assessment
 
-> Displays some [paginated] data and verifications from the BoomTown Github API.
+> Display select [paginated] data and verifications from the BoomTown Github API according to the given assignment.
+
 > Used for technical skill assessment.
 
 ## Try it out (pre-hosted)
