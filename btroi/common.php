@@ -105,4 +105,84 @@ if (!function_exists('array_useful')) {
 
     return TRUE;
   }
+
+  // Given an API URL, return the contents of the URL as an assosiative array.
+  // If the response is not an HTTP code 200, return false. Throw an exception
+  // if the GitHub rate limit is reached.
+  function api_url_to_array($url) {
+    $curl_handle = curl_init($url);
+    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($curl_handle, CURLOPT_USERAGENT, 'BenFenner');
+    $response_string = curl_exec($curl_handle);
+
+    $curl_error = curl_errno($curl_handle);
+    $http_code = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
+    curl_close($curl_handle);
+
+    $response = json_decode($response_string, TRUE);
+
+    if ($http_code == 403 && substr($response['message'], 0, 27) == 'API rate limit exceeded for') {
+      throw new Exception('GitHub hourly rate limit reached. All execution halted. Please try again in about an hour.');
+    }
+
+    if ($http_code != 200) {
+      return FALSE;
+    }
+
+    return $response;
+  }
+
+  // Output a notice about exceeding the GitHub hourly rate limit, display
+  // the footer, then halt execution.
+  function output_rate_limit_notice($e) {
+    echo '
+      <br><br>
+      <span style="font-weight: bold; color: red;">' . $e->getMessage() . '</span><br>';
+
+    include('footer.php');
+    die();
+  }
+
+  // Given a GitHub API endpoint URL, return the number of pages that exist for the records.
+  // If looking up the page count fails, assume a single page.
+  //
+  // This function should scale well as page count grows, requiring only one API
+  // call O(1) asking for header data only for an infinite amount of records.
+  function get_page_count($url) {
+    $page_count = 1;
+
+    // Get the headers, so we can parse out the "link" section containing the final page number.
+    $paginated_url = $url . '?page=1&per_page=' . RESULTS_PER_PAGE;
+    $context = stream_context_create(array('http' => array('method' => 'GET',
+                                                           'header' => 'User-Agent: BenFenner')));
+    $headers = get_headers($paginated_url, 1, $context);
+
+    if (string_useful($headers['link'])) {
+      // There is useful "link" header data, so determine the page count from it.
+
+      // The link variable below will contain a string that looks something like this:
+      // <https://api.github.com/organizations/1214096/repos?page=2&per_page=30>; rel="next", <https://api.github.com/organizations/1214096/repos?page=2&per_page=30>; rel="last"
+      //
+      // We are only interested in the page listed as the last, so use a bit of string manipulation to get it.
+      // TODO: There are probably better/cleaner ways to accomplish this, so look into improvements.
+      $link = $headers['link'];
+
+      $begin_phrase = '&per_page=' . RESULTS_PER_PAGE . '>; rel="next", <';
+      $end_phrase   = '&per_page=' . RESULTS_PER_PAGE . '>; rel="last"';
+      $begin_index  = strpos($link, $begin_phrase) + strlen($begin_phrase);
+      $end_index    = strrpos($link, $end_phrase);
+      $length       = $end_index - $begin_index;
+
+      // The finale_page_url variable below should contain a string that looks something like this:
+      // https://api.github.com/organizations/1214096/repos?page=2
+      $final_page_number_url = substr($link, $begin_index, $length);
+
+      $phrase = '?page=';
+      $index = strrpos($final_page_number_url, $phrase) + strlen($phrase);
+
+      $page_count = substr($final_page_number_url, $index);
+    }
+
+    return $page_count;
+  }
 }
