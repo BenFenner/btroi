@@ -1,0 +1,38 @@
+body {
+  margin: 0px auto;
+  padding: 0px;
+  font: 100% Tahoma,Calibri,Verdana,Geneva,sans-serif;
+  background-color: #CEDEFE;
+}
+
+div.title {
+  text-align: center;
+}
+
+div.navigation {
+  text-align: center;
+}
+
+div.hr {
+  height: 1px;
+  margin: 0px 50px 0px 50px;
+  background-color: #AAAAAA;
+}
+
+div.main_content {
+  margin: 0px 50px;
+}
+
+a {
+  text-decoration: none;
+  color: #0A00FF;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #6900DB;
+}
+
+a img {
+  border: 0;
+}
